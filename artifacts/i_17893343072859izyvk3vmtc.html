@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Recommendations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Iowan+Old+Style&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --page:#e5dbc4; --paper:#faf6ec; --paper-alt:#f4eedd;
+    --t1:#211d17; --t2:#3a342a; --t3:#5c5346; --t4:#8a8069;
+    --accent:#7a4a1e; --accent-soft:#9c6a34; --accent-dim:#b08a5a;
+    --rule-strong:#211d17; --rule-soft:#dcd0b8; --rule-hair:#e8ded0;
+    --tag-fic:#5f4a2c; --tag-nf:#3d4a3a; --tier-annotate:#6a3d5f; --tier-popcorn:#b06a1e;
+    --v-mind:#3f5a6a; --v-habit:#5a6a4a; --v-identity:#6a4a6a;
+    --v-craft:#7a4a2e; --v-emotion:#8a5a4a; --v-meaning:#4a5a5a;
+    --serif-display:"Spectral","Iowan Old Style",Georgia,serif;
+    --serif-body:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html { background:var(--page); scroll-behavior:smooth; }
+  body {
+    margin:0; background:
+      radial-gradient(120% 60% at 50% -8%, #f0e8d5 0%, var(--page) 62%);
+    color:var(--t2); font-family:var(--serif-body); line-height:1.58; -webkit-text-size-adjust:100%;
+  }
+  .wrap { max-width:760px; margin:0 auto; background:var(--paper); box-shadow:0 2px 2px rgba(60,44,20,.06), 0 18px 50px -22px rgba(60,44,20,.35); }
+  .pad { padding:22px 24px 80px; }
+
+  /* ---------- masthead ---------- */
+  header.masthead {
+    text-align:center; padding:38px 24px 22px; background:var(--paper);
+    border-bottom:1px solid var(--rule-soft); position:relative;
+  }
+  header.masthead::after {
+    content:""; position:absolute; left:50%; bottom:-1px; transform:translateX(-50%);
+    width:64px; height:3px; background:var(--accent-soft); border-radius:2px;
+  }
+  .eyebrow {
+    font-family:var(--sans); font-size:10.5px; letter-spacing:3.5px; text-transform:uppercase;
+    color:var(--accent-dim); font-weight:700; margin-bottom:10px;
+  }
+  header.masthead h1 {
+    font-family:var(--serif-display); font-size:clamp(30px,7vw,46px); margin:0 0 12px;
+    font-weight:700; color:var(--t1); line-height:1.06; letter-spacing:-0.2px;
+  }
+  header.masthead p {
+    margin:0 auto; max-width:34em; color:var(--t3); font-style:italic; font-size:14.5px; line-height:1.5;
+  }
+  .toolbar { display:flex; gap:8px; justify-content:center; margin:18px 0 0; flex-wrap:wrap; }
+  .toolbar button {
+    font-family:var(--sans); font-size:12px; font-weight:600; color:var(--accent);
+    background:#fff; border:1px solid var(--rule-soft); border-radius:20px; padding:7px 16px;
+    cursor:pointer; transition:all .15s;
+  }
+  .toolbar button:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  /* ---------- sticky quick nav ---------- */
+  .quicknav {
+    position:sticky; top:0; z-index:20; background:rgba(250,246,236,.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--rule-soft); padding:9px 24px;
+    display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;
+  }
+  .quicknav::-webkit-scrollbar { display:none; }
+  .quicknav a {
+    font-family:var(--sans); font-size:11.5px; font-weight:600; white-space:nowrap;
+    color:var(--t3); text-decoration:none; padding:5px 11px; border-radius:14px; border:1px solid transparent;
+    transition:all .15s;
+  }
+  .quicknav a:hover { color:var(--accent); background:var(--paper-alt); border-color:var(--rule-soft); }
+
+  /* ---------- intro / callouts ---------- */
+  .intro {
+    background:var(--paper-alt); border:1px solid var(--rule-soft); border-left:3px solid var(--accent);
+    border-radius:6px; padding:16px 19px; margin:16px 0 10px; font-size:14.5px; color:var(--t2); line-height:1.55;
+  }
+  .intro strong { color:var(--t1); }
+  .legend {
+    display:flex; flex-wrap:wrap; gap:7px 16px; margin:0 0 4px; padding:12px 18px;
+    background:transparent; border:none; font-size:12.5px; color:var(--t3);
+  }
+  .legend .item { display:flex; align-items:center; gap:6px; }
+
+  /* ---------- domain (top-level collapsible) ---------- */
+  details.domain {
+    margin:22px 0 0; border:1px solid var(--rule-soft); border-radius:10px; overflow:hidden;
+    background:var(--paper); transition:box-shadow .2s;
+  }
+  details.domain[open] { box-shadow:0 6px 22px -14px rgba(60,44,20,.4); }
+  details.domain > summary {
+    list-style:none; cursor:pointer; padding:19px 20px; background:var(--paper-alt);
+    display:flex; align-items:center; gap:14px; user-select:none; position:relative;
+  }
+  details.domain > summary::-webkit-details-marker { display:none; }
+  .dom-chev {
+    font-size:12px; color:var(--accent); transition:transform .25s cubic-bezier(.4,0,.2,1);
+    flex:0 0 auto; font-family:var(--sans); display:inline-block; width:14px;
+  }
+  details.domain[open] .dom-chev { transform:rotate(90deg); }
+  .dom-titles { flex:1 1 auto; }
+  .dom-h { font-family:var(--serif-display); font-size:clamp(19px,5vw,25px); font-weight:700; color:var(--t1); line-height:1.15; }
+  .dom-sub { font-size:12.5px; color:var(--t3); font-style:italic; margin-top:4px; line-height:1.4; }
+  .dom-count {
+    font-family:var(--sans); font-size:11px; font-weight:700; color:var(--accent);
+    background:#fff; border:1px solid var(--rule-soft); border-radius:20px; padding:4px 12px; flex:0 0 auto;
+  }
+  .dom-body { padding:4px 22px 24px; }
+
+  /* ---------- nested list/vein group ---------- */
+  details.grp { margin:20px 0 0; border-top:1px solid var(--rule-hair); }
+  details.grp:first-of-type { margin-top:6px; }
+  details.grp > summary {
+    list-style:none; cursor:pointer; padding:14px 0 10px; display:flex; align-items:baseline;
+    gap:11px; user-select:none; flex-wrap:wrap;
+  }
+  details.grp > summary::-webkit-details-marker { display:none; }
+  .grp-chev {
+    font-size:10px; color:var(--accent-dim); transition:transform .2s; font-family:var(--sans);
+    display:inline-block; width:10px;
+  }
+  details.grp[open] .grp-chev { transform:rotate(90deg); }
+  .grp-num {
+    font-family:var(--sans); font-size:10.5px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--accent-dim); font-weight:700;
+  }
+  .grp-h { font-family:var(--serif-display); font-size:clamp(17px,4vw,21px); margin:0; color:var(--t1); font-weight:600; flex:1 1 auto; }
+  .vein-tag {
+    font-family:var(--sans); font-size:10px; letter-spacing:1.4px; text-transform:uppercase; font-weight:700;
+    color:#fff; padding:3px 10px; border-radius:3px;
+  }
+  .vt-mind{background:var(--v-mind)} .vt-habit{background:var(--v-habit)} .vt-identity{background:var(--v-identity)}
+  .vt-craft{background:var(--v-craft)} .vt-emotion{background:var(--v-emotion)} .vt-meaning{background:var(--v-meaning)}
+
+  .list-sub, .vein-sub { font-size:13.5px; color:var(--t3); font-style:italic; margin:0 0 18px; line-height:1.5; padding-left:21px; }
+  .group-label {
+    font-family:var(--sans); font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:#fff;
+    background:var(--accent); display:inline-block; padding:3px 11px; border-radius:3px;
+    margin:24px 0 8px; font-weight:700;
+  }
+
+  /* ---------- book entries ---------- */
+  .book { padding:15px 0 16px; border-bottom:1px solid var(--rule-hair); }
+  .book:last-child { border-bottom:none; }
+  .book-title { font-family:var(--serif-display); font-size:17.5px; font-weight:700; margin:0 0 3px; line-height:1.3; color:var(--t1); }
+  .book-author { font-size:13px; color:var(--t3); margin:0 0 8px; font-style:italic; }
+  .badges { margin:0 0 8px; display:flex; flex-wrap:wrap; gap:5px; }
+  .book-why { font-size:14.5px; margin:0 0 11px; color:var(--t2); line-height:1.55; }
+  .book-why em { color:var(--t1); font-style:italic; }
+
+  .tag,.tier,.flag,.conf {
+    display:inline-block; font-family:var(--sans); font-size:9.5px; letter-spacing:.6px; text-transform:uppercase;
+    padding:2.5px 8px; border-radius:3px; color:#fff; font-weight:700; white-space:nowrap; line-height:1.5;
+  }
+  .tag.fic{background:var(--tag-fic)} .tag.nf{background:var(--tag-nf)}
+  .tier.annotate{background:var(--tier-annotate)} .tier.popcorn{background:var(--tier-popcorn)}
+  .conf.high{background:#2f5e3a} .conf.solid{background:#6a7a4a} .conf.med{background:#b8a04a;color:#2b2620} .conf.low{background:#ddd1b3;color:#5c5346}
+  .flag.thesis{background:#3f6b46} .flag.scan{background:#b0741e} .flag.pro{background:#5a4a7a}
+
+  .validation {
+    background:#eef2ea; border:1px solid #cdd8c8; border-left:3px solid #2f5e3a; border-radius:6px;
+    padding:14px 18px; margin:0 0 18px 21px; font-size:13.5px; color:#34402e; line-height:1.5;
+  }
+  .validation strong { color:#1f3320; }
+  .anchor {
+    font-size:12.5px; color:var(--t3); font-style:italic; margin:16px 0 0; padding:10px 14px;
+    background:var(--paper-alt); border-radius:6px; border-left:3px solid var(--accent-dim); line-height:1.5;
+  }
+  .map {
+    background:var(--paper-alt); border:1px solid var(--rule-soft); border-radius:6px; padding:14px 18px;
+    margin:10px 0 6px; font-size:13px; color:var(--t2); line-height:1.75;
+  }
+  .map b { color:var(--t1); font-weight:700; }
+
+  .links { display:flex; gap:6px; flex-wrap:wrap; }
+  .links a {
+    font-family:var(--sans); font-size:11.5px; font-weight:600; text-decoration:none; padding:5px 12px;
+    border:1px solid var(--rule-soft); border-radius:20px; color:var(--accent); background:#fff;
+    transition:all .15s;
+  }
+  .links a:hover,.links a:active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .links a.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .links a.primary:hover { background:var(--accent-soft); border-color:var(--accent-soft); }
+  .links a.libby { background:#efe9f4; border-color:#d2c2e0; color:#57407a; }
+  .links a.libby:hover { background:#57407a; color:#fff; border-color:#57407a; }
+
+  footer {
+    margin-top:38px; text-align:center; font-size:12.5px; color:var(--t3); font-style:italic;
+    border-top:1px solid var(--rule-soft); padding-top:22px; line-height:1.55;
+  }
+
+  @media(max-width:480px){
+    .book-title{font-size:16.5px} .pad{padding:16px 16px 64px}
+    header.masthead{padding:30px 16px 20px} .dom-body{padding:4px 14px 20px}
+    .quicknav{padding:8px 16px} .list-sub,.vein-sub{padding-left:0}
+    .validation{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Curated Library</div>
+    <h1>Reading Recommendations</h1>
+    <p>Fiction and nonfiction, curated against your rated log. Tap a section to open it; each list inside collapses too.</p>
+    <div class="toolbar">
+      <button onclick="document.querySelectorAll('details').forEach(d=>d.open=true)">Expand all</button>
+      <button onclick="document.querySelectorAll('details').forEach(d=>d.open=false)">Collapse all</button>
+    </div>
+  </header>
+
+  <nav class="quicknav">
+    <a href="#dom-fiction">Fiction</a>
+    <a href="#dom-self">Nonfiction · Self</a>
+    <a href="#grp-mull">Worth the mull</a>
+    <a href="#grp-mix">Mix it up</a>
+    <a href="#grp-indie">Indie voices</a>
+    <a href="#grp-popcorn">Popcorn</a>
+    <a href="#grp-gender">Gender architecture</a>
+    <a href="#grp-rising">Rising through the ranks</a>
+  </nav>
+
+  <div class="pad">
+
+    <!-- ============ FICTION ============ -->
+    <details class="domain" id="dom-fiction" open>
+      <summary>
+        <span class="dom-chev">▸</span>
+        <div class="dom-titles">
+          <div class="dom-h">Fiction</div>
+          <div class="dom-sub">Five curations — from your real wheelhouse to gender architecture done right</div>
+        </div>
+        <span class="dom-count">35 books</span>
+      </summary>
+      <div class="dom-body">
+        <div class="intro">
+          Built on your rated log: fast fantasy is over-counted (cheap to finish), meaty nonfiction under-counted (weeks per book), so frequency lies. Weighted to the <strong>worth-the-mull</strong> tier, your 2025–26 literary-SF turn, and the character-primacy that anchors your taste. Nonfiction picks appear inside Lists One and Two where they pair with the fiction argument; the full nonfiction map lives in the next section.
+        </div>
+        <div class="legend">
+          <span class="item"><span class="tier annotate">Annotate-worthy</span> dense, rewards a slow read</span>
+          <span class="item"><span class="tier popcorn">Frictionless</span> fast, punches above its genre</span>
+          <span class="item"><span class="conf high">Confidence</span> flagged on the gender-architecture list</span>
+        </div>
+        <details class="grp" id="grp-mull">
+      <summary><span class="grp-chev">▸</span><span class="grp-num">List One</span><h2 class="grp-h">Worth the mull — your real wheelhouse</h2></summary>
+      
+    <p class="list-sub">The dense-but-gripping tier your "Notes to Type Up" list is secretly a ranking of: Keegan, Greene, Hourani, Balko, Baru Cormorant. Books that earn their length and their highlighter.</p>
+
+    <div class="group-label">Nonfiction</div>
+
+    <div class="book">
+      <p class="book-title">The Warmth of Other Suns</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Isabel Wilkerson</p>
+      <p class="book-why">You gave <em>Caste</em> a 9.5 and pulled it into your to-annotate pile. This is her masterwork — the Great Migration through three intimate lives. Exactly the structural-history-with-a-human-spine that clears your high bar and deserves the multi-week commitment.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Warmth+of+Other+Suns+Wilkerson" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Warmth+of+Other+Suns+Wilkerson" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Warmth+of+Other+Suns+Wilkerson" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">On Grand Strategy</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">John Lewis Gaddis</p>
+      <p class="book-why">Three Robert Greene titles sit in your annotate pile, plus Liddell Hart and Keegan. This is the rigorous, primary-source version of that same strategy-across-history instinct — Lincoln, Machiavelli, Augustus — from the dean of Cold War history. Built to be marked up.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=On+Grand+Strategy+Gaddis" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=On+Grand+Strategy+John+Lewis+Gaddis" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=On+Grand+Strategy+Gaddis" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">A World Undone</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">G. J. Meyer</p>
+      <p class="book-why">You have Keegan and Hourani in the annotate pile but bounced off Fromkin's dry <em>Peace to End All Peace</em>. This is WWI narrative history that keeps the sweep without the slog — the readable counterpart to the military history you actually finish.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=A+World+Undone+Meyer" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=A+World+Undone+G+J+Meyer" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=A+World+Undone+Meyer" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Guns of August</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Barbara Tuchman</p>
+      <p class="book-why">Canonical military history you've somehow never logged, and Tuchman's prose is genuinely propulsive — a Pulitzer for a reason. Pairs directly with your Keegan / Pinker interests and rewards the slow read you give this tier.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Guns+of+August+Tuchman" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Guns+of+August+Barbara+Tuchman" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Guns+of+August+Tuchman" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="group-label">Fiction that earns its length</div>
+
+    <div class="book">
+      <p class="book-title">The Will of the Many</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">James Islington</p>
+      <p class="book-why">Roman-flavored dark academia with a hidden power system and a ruthless protagonist climbing the empire that killed his family. This is the thinking-person's version of the Baru / Red Rising itch — themes of complicity and consent under empire, not just plot. Earns its 600 pages.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Will+of+the+Many+Islington" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Will+of+the+Many+James+Islington" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Will+of+the+Many+Islington" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Too Like the Lightning</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Ada Palmer</p>
+      <p class="book-why">Your 2025–26 turn toward literary, politically-dense SF (Children of Time, Red Mars, Perdido Street Station) points straight here — and you've already caught up on Martine and Tchaikovsky, so this is the next rung up. A 25th-century world reorganized around ideas rather than nations, narrated in deliberate 18th-century Enlightenment style. A historian's SF: demanding, structural, and built to be argued with in the margins. The most annotate-native novel on this list.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Too+Like+the+Lightning+Palmer" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Too+Like+the+Lightning+Ada+Palmer" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Too+Like+the+Lightning+Ada+Palmer" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp" id="grp-mix">
+      <summary><span class="grp-chev">▸</span><span class="grp-num">List Two</span><h2 class="grp-h">Mix it up &amp; cover blind spots</h2></summary>
+      
+    <p class="list-sub">Gaps even your rated years barely touch: translated literary fiction, narrative science, economics, primary-source philosophy, pre-modern non-Western history. All annotate-tier — these are worth the slow read.</p>
+
+    <div class="book">
+      <p class="book-title">The Overstory</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Richard Powers</p>
+      <p class="book-why">Nature + structure + big ideas. Bridges <em>Braiding Sweetgrass</em> (which you found too slow) with the narrative propulsion you actually want — nine lives braided into one argument about trees. The version of "ecological" reading that won't bore you out.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Overstory+Powers" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Overstory+Richard+Powers" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Overstory+Powers" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Human Acts</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Han Kang (tr. Deborah Smith)</p>
+      <p class="book-why">Translated Korean literary fiction, spare and unsettling, built around the Gwangju uprising — political violence rendered at human scale. Expands hard past your Anglophone default, and Han's 2024 Nobel makes the timing right. Short but it lingers.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Human+Acts+Han+Kang" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Human+Acts+Han+Kang" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Human+Acts+Han+Kang" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Debt: The First 5,000 Years</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">David Graeber</p>
+      <p class="book-why">Economics/anthropology you have almost none of — structural, argumentative, gleefully contrarian. Dismantles the "barter myth" and rebuilds how you think about money and obligation. Peak highlighter bait for a systems thinker.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Debt+The+First+5000+Years+Graeber" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Debt+The+First+5000+Years+Graeber" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Debt+The+First+5000+Years+Graeber" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">1491</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Charles C. Mann</p>
+      <p class="book-why">Pre-Columbian Americas — a huge hole in your history reading, and genuinely gripping rather than dutiful. Overturns most of what you were taught about the hemisphere before contact. Reads like the good Harari but with deeper archaeology.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=1491+Charles+Mann" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=1491+Charles+C+Mann" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=1491+Charles+Mann" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Meditations</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Marcus Aurelius (tr. Gregory Hays)</p>
+      <p class="book-why">You read Stoicism secondhand via Holiday and <em>The Pocket Stoic</em> — both in your log. Go to the source; the Hays translation is the readable one, and it's practically designed for margin notes. The most annotate-native book on this whole list.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Meditations+Marcus+Aurelius+Hays" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Meditations+Marcus+Aurelius+Gregory+Hays" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Meditations+Marcus+Aurelius+Hays" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Emperor of All Maladies</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Siddhartha Mukherjee</p>
+      <p class="book-why">Narrative science, Pulitzer-winning — "a biography of cancer." A genre you basically never touch, but it rewards exactly what you reward: structure + human story + rigor. A strong bet to become a surprise annotate-pile entry.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Emperor+of+All+Maladies+Mukherjee" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Emperor+of+All+Maladies+Mukherjee" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Emperor+of+All+Maladies+Mukherjee" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp" id="grp-indie">
+      <summary><span class="grp-chev">▸</span><span class="grp-num">List Three</span><h2 class="grp-h">Indie &amp; underrepresented voices</h2></summary>
+      
+    <p class="list-sub">Same taste — power, war, structure — but from small presses, translation, and writers your log barely reaches (it skews Anglophone and toward already-established names). All chosen to reward the slow read.</p>
+
+    <div class="group-label">Fiction</div>
+
+    <div class="book">
+      <p class="book-title">The Rage of Dragons</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Evan Winter</p>
+      <p class="book-why">Self-published breakout before a traditional deal. Xhosa-inspired secondary world, a rigid caste-military society, revenge-driven protagonist — the Poppy War / Red Rising machinery from a South African–Canadian author writing outside the Euro-fantasy mold.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Rage+of+Dragons+Winter" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Rage+of+Dragons+Evan+Winter" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Rage+of+Dragons+Winter" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Death of Vivek Oji</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Akwaeke Emezi</p>
+      <p class="book-why">Nigerian literary fiction — a family, a death, and questions of gender and belonging in a Nigerian town. One of the most distinctive voices of the decade, and nothing in your log occupies this exact emotional and formal space.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Death+of+Vivek+Oji+Emezi" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Death+of+Vivek+Oji+Emezi" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Death+of+Vivek+Oji+Emezi" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Devourers</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Indra Das</p>
+      <p class="book-why">A near-forgotten small-press gem: shapeshifters across Mughal-era and modern India, feral and literary. Indian SFF that reads nothing like the Western fantasy dominating your shelves — strange enough to reward slow attention.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Devourers+Indra+Das" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Devourers+Indra+Das" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Devourers+Indra+Das" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="group-label">Nonfiction</div>
+
+    <div class="book">
+      <p class="book-title">Minor Feelings</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Cathy Park Hong</p>
+      <p class="book-why">Essays on Asian-American consciousness, art, and race — the critical-essay lineage of your Elaine Castillo and Richard Dyer reads (both in your annotate pile), but sharper and more personal. A poet's nonfiction, made to be marked up.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Minor+Feelings+Cathy+Park+Hong" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Minor+Feelings+Cathy+Park+Hong" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Minor+Feelings+Cathy+Park+Hong" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Easy Beauty</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Chloé Cooper Jones</p>
+      <p class="book-why">A philosopher's memoir of disability, travel, and perception — the deeper, more literary counterpart to <em>Being Seen</em> (Sjunneson), which you rated a 9 and pulled to annotate. Small-press sensibility, big philosophical reach.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Easy+Beauty+Chloe+Cooper+Jones" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Easy+Beauty+Chloe+Cooper+Jones" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Easy+Beauty+Cooper+Jones" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Undocumented Americans</p>
+      <div class="badges"><span class="tag nf">Nonfiction</span><span class="tier annotate">Annotate-worthy</span></div>
+      <p class="book-author">Karla Cornejo Villavicencio</p>
+      <p class="book-why">A furious, literary reported memoir of undocumented life — the experimental cousin to Vargas's <em>Dear America</em> and Engel's <em>Infinite Country</em>, both of which you rated highly. Among the first books by a formerly undocumented author to break through.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Undocumented+Americans+Villavicencio" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Undocumented+Americans+Cornejo+Villavicencio" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Undocumented+Americans+Villavicencio" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp" id="grp-popcorn">
+      <summary><span class="grp-chev">▸</span><span class="grp-num">List Four</span><h2 class="grp-h">Popcorn done right</h2></summary>
+      
+    <p class="list-sub">Fast reads you'll grab anyway — but your ratings say you <em>don't</em> grade fluff on a curve (The Bodyguard got a 4; Iron Flame a 2). So this isn't "fun and quick," it's fast reads that clear a real bar: sharp prose, actual stakes, or a clever engine. Hollow-but-charming doesn't make the cut, because you'd rate it a 4 too.</p>
+
+    <div class="book">
+      <p class="book-title">Cradle: Unsouled</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier popcorn">Frictionless</span></div>
+      <p class="book-author">Will Wight</p>
+      <p class="book-why">You tore through all seven Dungeon Crawler Carl books in 2025 — so progression fantasy / LitRPG is now a confirmed lane, not a guess. Cradle is the genre's gold standard: a twelve-book power-progression saga with tight pacing and an actual arc. If you want another deep bench to fall into the way you did with DCC, this is it. Book one is short and free-ish to sample.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Unsouled+Cradle+Will+Wight" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Unsouled+Cradle+Will+Wight" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Unsouled+Will+Wight" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">A Marvellous Light</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier popcorn">Frictionless</span></div>
+      <p class="book-author">Freya Marske</p>
+      <p class="book-why">Edwardian magic + genuine romance done with wit and craft, not filler. If you want the romantasy hit but resent the usual mediocre prose, this is the version that respects your intelligence. Fast, charming, actually well-built.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=A+Marvellous+Light+Marske" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=A+Marvellous+Light+Freya+Marske" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=A+Marvellous+Light+Marske" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Spirit Bares Its Teeth</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier popcorn">Frictionless</span></div>
+      <p class="book-author">Andrew Joseph White</p>
+      <p class="book-why">Fast, sharp, gothic-horror-adjacent fantasy with real edge and a distinctive trans protagonist — the kind of quick read that still leaves a mark. Genre-speed pacing without the paint-by-numbers feel you've called out on the weaker romantasy.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Spirit+Bares+Its+Teeth+White" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Spirit+Bares+Its+Teeth+Andrew+Joseph+White" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Spirit+Bares+Its+Teeth+White" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp" id="grp-gender">
+      <summary><span class="grp-chev">▸</span><span class="grp-num">List Five</span><h2 class="grp-h">Gender architecture done right</h2></summary>
+      
+    <p class="list-sub">The Lisa Cassidy axis: distributed female power (not the lone special girl), earned competence, romance between peers, stakes without plot armor, misogyny treated as subject not seasoning, moral ambiguity extended to women. The opposite of the ACOTAR / Fourth Wing mode you rate in the 2s and 3s. Badly documented in reviews, so these are reasoned from content — confidence flagged per pick.</p>
+
+    <div class="validation">
+      <strong>Calibration check (you've read these):</strong> Tigana, the Farseer trilogy, Novik's Uprooted &amp; Spinning Silver, and The Goblin Emperor all landed as read-and-loved — which is the proof this axis tracks something real in your taste, not genre-matching. So the picks below are all confirmed <em>new</em> to you, pointed at the same architecture. A related thread worth naming from your Goblin Emperor note: <strong>protagonist learning the ropes and rising to power in a politically hostile environment, against their own value system</strong> — the Baru parallel. Marked ⟡ where a pick also hits that.
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Sarantine Mosaic ⟡</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf high">Very high confidence</span></div>
+      <p class="book-author">Guy Gavriel Kay — <em>Sailing to Sarantium</em> / <em>Lord of Emperors</em></p>
+      <p class="book-why">You love <em>Lions of Al-Rassan</em> and remember <em>Tigana</em>'s intensity years on — so the safest rec on this whole list is more Kay in exactly that mode. A broad cast where women hold real structural power and scheme as equals, love that carries genuine cost, moral ambiguity throughout, and his refusal to protect anyone from consequence. Also a court-intrigue rise into a hostile political world (the ⟡ thread).</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Sailing+to+Sarantium+Kay" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Sailing+to+Sarantium+Guy+Gavriel+Kay" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Sailing+to+Sarantium+Kay" target="_blank" rel="noopener">Goodreads</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Sailing%20to%20Sarantium/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Sailing%20to%20Sarantium/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Paladin of Souls</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf high">Very high confidence</span></div>
+      <p class="book-author">Lois McMaster Bujold</p>
+      <p class="book-why">You rated <em>The Curse of Chalion</em> a 9 — this is its direct sequel and a purpose-built answer to your ask. The protagonist is a middle-aged noblewoman, previously sidelined, who reclaims full agency; Bujold wrote it deliberately against the young-ingenue default and it swept the Hugo and Nebula for exactly how it handles a woman's competence and autonomy.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Paladin+of+Souls+Bujold" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Paladin+of+Souls+Bujold" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Paladin+of+Souls+Bujold" target="_blank" rel="noopener">Goodreads</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Paladin%20of%20Souls/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Paladin%20of%20Souls/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Liveship Traders</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf high">High confidence</span></div>
+      <p class="book-author">Robin Hobb — <em>Ship of Magic</em> onward</p>
+      <p class="book-why">The Farseer trilogy was a defining middle-school read for you, but you've never logged this one — and it's Hobb's masterclass on distributed female power across a whole society (trader families, pirates, the ship-women), earned competence, and romance that's earned and often painful rather than swoony. The emotional consequence is brutal in the way you value.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Ship+of+Magic+Robin+Hobb" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Ship+of+Magic+Robin+Hobb" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Ship+of+Magic+Hobb" target="_blank" rel="noopener">Goodreads</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Ship%20of%20Magic%20Hobb/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Ship%20of%20Magic%20Hobb/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Cold Magic (Spiritwalker)</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf high">High confidence</span></div>
+      <p class="book-author">Kate Elliott</p>
+      <p class="book-why">One of the few authors who talks openly about inverting the "one special woman" structure — her worlds are full of women with real institutional power, and Cold Magic's slow-burn romance is built on developing mutual respect rather than instant possession. Gaslamp/Regency-Afro-Celtic setting, well outside your usual mold.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Cold+Magic+Kate+Elliott" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Cold+Magic+Kate+Elliott" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Cold+Magic+Elliott" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">He Who Drowned the World</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf solid">Solid confidence</span></div>
+      <p class="book-author">Shelley Parker-Chan</p>
+      <p class="book-why">You read <em>She Who Became the Sun</em> and rated the author well — this is its sequel, deepening exactly the queer, ruthless, moral-ambiguity-extended-to-women territory you rewarded. Power, gender, and ambition as inseparable. Author already validated on your axis.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=He+Who+Drowned+the+World+Parker-Chan" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=He+Who+Drowned+the+World+Parker-Chan" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=He+Who+Drowned+the+World+Parker-Chan" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Jasmine Throne</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf solid">Solid confidence</span></div>
+      <p class="book-author">Tasha Suri</p>
+      <p class="book-why">Sapphic, anti-colonial epic fantasy with a cast of women holding and contesting power, and a relationship between equals often at cross-purposes. Suri writes misogyny and empire as intertwined subjects — the "treated as subject, not seasoning" marker, front and center.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Jasmine+Throne+Suri" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=The+Jasmine+Throne+Tasha+Suri" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=The+Jasmine+Throne+Suri" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Empress of Salt and Fortune</p>
+      <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf med">Medium confidence</span></div>
+      <p class="book-author">Nghi Vo</p>
+      <p class="book-why">A quiet, precise novella about how an overlooked handmaiden and a deposed empress reshape an empire from its margins — power built by women the court underestimated. Short and beautifully written; I flag medium only because it's more oblique than the epic picks, not because the architecture is weaker. A ⟡-adjacent rise-through-a-hostile-court read.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Empress+of+Salt+and+Fortune+Nghi+Vo" target="_blank" rel="noopener">Bookshop</a>
+        <a href="https://www.amazon.com/s?k=Empress+of+Salt+and+Fortune+Nghi+Vo" target="_blank" rel="noopener">Amazon</a>
+        <a href="https://www.goodreads.com/search?q=Empress+of+Salt+and+Fortune+Vo" target="_blank" rel="noopener">Goodreads</a>
+      </div>
+    </div>
+  
+    </details>
+
+    <details class="grp" id="grp-rising">
+      <summary><span class="grp-chev">▸</span><span class="grp-num">List Six</span><h2 class="grp-h">Rising through the ranks</h2></summary>
+      <p class="list-sub">A woman entering an unfamiliar power structure — military, court, bureaucratic, political — and having to learn its rules, prove competence, and climb or survive through it. Your most recurring high-rated shape: the Attolia books, Curse of Chalion, Marilia the Warlord, the LaFevers nuns, Jade City, She Who Became the Sun. Ordered by confidence.</p>
+
+      <div class="book">
+        <p class="book-title">The Winner's Curse</p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf high">High confidence</span></div>
+        <p class="book-author">Marie Rutkoski</p>
+        <p class="book-why">A general's daughter in a slave-holding empire navigates political and military machinery and buys a slave who's more than he appears — the trilogy becomes a genuinely smart story of war, strategy, and divided loyalty. She wins through cunning, not chosen-one power. Underrated and precisely your lane.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Winner%27s+Curse+Rutkoski" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=The+Winners+Curse+Rutkoski" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Winner%27s%20Curse%20Rutkoski/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Winner%27s%20Curse%20Rutkoski/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="book">
+        <p class="book-title">Ancillary Justice</p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf high">High confidence</span></div>
+        <p class="book-author">Ann Leckie</p>
+        <p class="book-why">The modern literary-SF landmark you're missing. A former warship's AI, now confined to a single human body, moves through a rigid imperial hierarchy seeking justice; the empire defaults to "she" for everyone, so gender and power are interrogated at the sentence level. Cerebral in the Children of Time register you rate 10s.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=Ancillary+Justice+Leckie" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=Ancillary+Justice+Leckie" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Ancillary%20Justice%20Leckie/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Ancillary%20Justice%20Leckie/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="book">
+        <p class="book-title">The Councillor</p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf solid">Solid confidence</span></div>
+        <p class="book-author">E.J. Beaton</p>
+        <p class="book-why">Machiavellian court fantasy: a scholar is unexpectedly named to choose the realm's next ruler and has to navigate a viper's nest of political intrigue with no army and no title — only wits. A woman moving through a hostile political structure via intelligence alone, very Baru/Goblin-Emperor adjacent.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Councillor+Beaton" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=The+Councillor+E+J+Beaton" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Councillor%20Beaton/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Councillor%20Beaton/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="book">
+        <p class="book-title">The Bone Shard Daughter</p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier popcorn">Frictionless</span><span class="conf solid">Solid confidence</span></div>
+        <p class="book-author">Andrea Stewart</p>
+        <p class="book-why">The emperor's daughter, cut off from power and memory, has to reverse-engineer her father's magic and her own claim in a dissolving empire — multiple women navigating power across the archipelago. Faster-paced than the others here; a well-built rise arc that still respects your intelligence.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Bone+Shard+Daughter+Stewart" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=The+Bone+Shard+Daughter+Stewart" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Bone%20Shard%20Daughter/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Bone%20Shard%20Daughter/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="book">
+        <p class="book-title">The Jasmine Throne</p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf solid">Solid confidence</span></div>
+        <p class="book-author">Tasha Suri</p>
+        <p class="book-why">Also on List Five for its gender architecture, and it's a direct hit on this arc too: an exiled princess and a maidservant with hidden power move through and against a collapsing empire. Two women, two rises, one structure caving in around them.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Jasmine+Throne+Suri" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=The+Jasmine+Throne+Suri" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Jasmine%20Throne%20Suri/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Jasmine%20Throne%20Suri/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="book">
+        <p class="book-title">Winter's Orbit</p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier popcorn">Frictionless</span><span class="conf med">Medium confidence</span></div>
+        <p class="book-author">Everina Maxwell</p>
+        <p class="book-why">A minor royal must navigate an imperial power structure and a treaty crisis via a marriage of alliance. More romance-forward than the rest of this list — flagged medium given your low tolerance for hollow romance — but the political-navigation spine is real and the central relationship is a peer dynamic, not a possession fantasy.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=Winter%27s+Orbit+Maxwell" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=Winters+Orbit+Everina+Maxwell" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Winter%27s%20Orbit%20Maxwell/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Winter%27s%20Orbit%20Maxwell/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="book">
+        <p class="book-title">The Hands of the Emperor <span style="font-weight:400;font-style:italic;font-size:0.7em;">(partial fit — flagged)</span></p>
+        <div class="badges"><span class="tag fic">Fiction</span><span class="tier annotate">Annotate-worthy</span><span class="conf low">Lower confidence</span></div>
+        <p class="book-author">Victoria Goddard</p>
+        <p class="book-why">The purest "navigating and transforming an institution from inside" book that exists — a career civil servant's rise through an imperial bureaucracy and his friendship with the emperor. Male lead, so it's a partial fit on the "female" half of your ask; included because the institutional-navigation core is the closest thing to your named Goblin Emperor love that I know of.</p>
+        <div class="links">
+          <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Hands+of+the+Emperor+Goddard" target="_blank" rel="noopener">Bookshop</a>
+          <a href="https://www.goodreads.com/search?q=Hands+of+the+Emperor+Victoria+Goddard" target="_blank" rel="noopener">Goodreads</a>
+          <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Hands%20of%20the%20Emperor%20Goddard/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+          <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Hands%20of%20the%20Emperor%20Goddard/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+        </div>
+      </div>
+
+      <div class="anchor">Worth confirming: your read history is ambiguous on whether you've read <em>The Traitor Baru Cormorant</em> (book one) versus just its sequels. If you haven't, it's the single most on-target book for this list — a brilliant young woman from a conquered people joins the empire's bureaucracy and climbs its financial-political hierarchy to destroy it from within.</div>
+    </details>
+      </div>
+    </details>
+
+    <!-- ============ NONFICTION: THE SELF ============ -->
+    <details class="domain" id="dom-self">
+      <summary>
+        <span class="dom-chev">▸</span>
+        <div class="dom-titles">
+          <div class="dom-h">Nonfiction · Books About the Self</div>
+          <div class="dom-sub">One umbrella in six regions — how the self works, gets built, and steers</div>
+        </div>
+        <span class="dom-count">15 books</span>
+      </summary>
+      <div class="dom-body">
+        <div class="intro">
+          You read these as facets of one question — <strong>how do I understand and operate this self?</strong> — not separate genres. Competing theses across veins are the point, not a problem. Weighted to your ratings: <strong>rigor and reframing over tactics</strong>, thesis over filler. Extrapolated outward past your entry points (Obstacle / One Thing / Four Thousand Weeks / Peak) into how the mind, identity, and emotion actually work.
+          <div class="legend" style="margin-top:10px;background:transparent;border:none;padding:0;">
+            <span class="item"><span class="flag thesis">Real thesis</span> savor it</span>
+            <span class="item"><span class="flag scan">Scan-worthy</span> good idea, skimmable</span>
+            <span class="item"><span class="flag pro">Pro-relevant</span> speaks to the craft work</span>
+          </div>
+        </div>
+        <div class="map">
+    <b>The six regions:</b><br>
+    ① <b>How the mind works</b> — cognition, bias, emotion as mechanism<br>
+    ② <b>Habit &amp; attention</b> — the machinery of what you repeatedly do<br>
+    ③ <b>Identity &amp; the self</b> — what a "you" even is, and how it forms<br>
+    ④ <b>Mastery &amp; craft</b> — how excellence actually gets built (your Peak / Mastery vein)<br>
+    ⑤ <b>Emotion, connection &amp; the good life</b> — the relational self<br>
+    ⑥ <b>Meaning &amp; finitude</b> — what the whole thing is for (your Stoic / Burkeman vein)
+  </div>
+
+  
+        <details class="grp">
+      <summary><span class="grp-chev">▸</span><span class="vein-tag vt-mind">① Mind</span><h2 class="grp-h">How the mind works</h2></summary>
+      
+    <p class="vein-sub">The machinery under everything else on this list — how you actually think, decide, and feel, versus how you assume you do. The rigorous end; all thesis, little filler.</p>
+
+    <div class="book">
+      <p class="book-title">Thinking, Fast and Slow</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Daniel Kahneman</p>
+      <p class="book-why">The foundational text on the two-system mind and the biases baked into it — the book every lesser "decision-making" title cribs from. Dense and long, but it's the substantive source, and it rewards the slow read you give the annotate tier. If you liked <em>Think Again</em>'s questioning-your-own-reasoning move, this is the deep version.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Thinking+Fast+and+Slow+Kahneman" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Thinking%20Fast%20and%20Slow/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Thinking%20Fast%20and%20Slow/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">How Emotions Are Made</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Lisa Feldman Barrett</p>
+      <p class="book-why">A genuine paradigm-shifter: emotions aren't hardwired reactions you detect, they're <em>constructed</em> by your brain from prediction and context. Overturns the intuitive model completely — squarely in your <em>Ways of Being</em> / <em>Think Again</em> reframe-my-assumptions wheelhouse. Rigorous, occasionally dense, worth the effort.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=How+Emotions+Are+Made+Barrett" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-How%20Emotions%20Are%20Made/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-How%20Emotions%20Are%20Made/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Righteous Mind</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Jonathan Haidt</p>
+      <p class="book-why">Why people divide over morality and politics — the "elephant and rider" model of intuition-first, reasoning-after. Connects your interest in bias (Race After Technology, Think Again) to moral psychology. Even-handed and genuinely mind-changing about how your own convictions form.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Righteous+Mind+Haidt" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Righteous%20Mind%20Haidt/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Righteous%20Mind%20Haidt/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp">
+      <summary><span class="grp-chev">▸</span><span class="vein-tag vt-habit">② Habit</span><h2 class="grp-h">Habit &amp; attention</h2></summary>
+      
+    <p class="vein-sub">The mechanism level of what you repeatedly do — where the productivity vein gets rigorous instead of listicle-y. You rated Atomic Habits 8.5; these are the ones that clear that bar.</p>
+    <p class="anchor">You've already read the anchors here — <em>Atomic Habits</em>, <em>The Power of Habit</em>, <em>The One Thing</em> — so these push past them rather than repeat.</p>
+
+    <div class="book">
+      <p class="book-title">Deep Work</p>
+      <div class="badges"><span class="flag scan">Scan-worthy</span><span class="flag pro">Pro-relevant</span></div>
+      <p class="book-author">Cal Newport</p>
+      <p class="book-why">The case that sustained, distraction-free concentration is both increasingly rare and increasingly valuable — and a system for protecting it. Directly relevant to deep creative/craft work. Flagged scan because the thesis lands early and the anecdotes pad; extract the framework and the rules, skip the war stories.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Deep+Work+Newport" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Deep%20Work%20Newport/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Deep%20Work%20Newport/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Stolen Focus</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Johann Hari</p>
+      <p class="book-why">Reframes the attention crisis as <em>systemic</em>, not a personal willpower failure — pushing back on the "just build better habits" framing the way Burkeman pushes back on productivity. Reported and argumentative rather than tip-based. A good tension-partner to Deep Work: one says fix yourself, this says the environment is engineered against you.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Stolen+Focus+Hari" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Stolen%20Focus%20Hari/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Stolen%20Focus%20Hari/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp">
+      <summary><span class="grp-chev">▸</span><span class="vein-tag vt-identity">③ Identity</span><h2 class="grp-h">Identity &amp; the self</h2></summary>
+      
+    <p class="vein-sub">The outward extrapolation your entry points didn't touch: what a "self" even is. The most philosophically ambitious vein — where the question turns on itself.</p>
+
+    <div class="book">
+      <p class="book-title">Being You: A New Science of Consciousness</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Anil Seth</p>
+      <p class="book-why">A neuroscientist's argument that the self and conscious experience are a "controlled hallucination" — your brain's best-guess model, not a direct readout of reality. Pairs stunningly with the SF you love (Children of Time, the constructed minds) and with Barrett's constructed-emotion thesis. Rigorous but genuinely wondrous.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Being+You+Anil+Seth" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Being%20You%20Anil%20Seth/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Being%20You%20Anil%20Seth/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">The Examined Life</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Stephen Grosz</p>
+      <p class="book-why">A psychoanalyst's short case studies of real people coming to understand themselves — closer to a story collection than a self-help book, and deeply character-driven (your top value). Each vignette is a whole person rendered with novelistic specificity. The self examined through others, beautifully. Not to be confused with the list's old title — this is a distinct, better book.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Examined+Life+Stephen+Grosz" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Examined%20Life%20Grosz/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Examined%20Life%20Grosz/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp">
+      <summary><span class="grp-chev">▸</span><span class="vein-tag vt-craft">④ Craft</span><h2 class="grp-h">Mastery &amp; craft</h2></summary>
+      
+    <p class="vein-sub">How excellence actually gets built — your Peak / Mastery vein, and a professionally live one given the concept-art work. You rated Mastery 9.5 and pulled it to your annotate pile; this is that cluster.</p>
+    <p class="anchor">Anchors already read: <em>Peak</em> (enjoying now), <em>Mastery</em> (9.5), <em>Range</em>. These extend the argument rather than restate it.</p>
+
+    <div class="book">
+      <p class="book-title">The Talent Code</p>
+      <div class="badges"><span class="flag scan">Scan-worthy</span><span class="flag pro">Pro-relevant</span></div>
+      <p class="book-author">Daniel Coyle</p>
+      <p class="book-why">The popular-narrative companion to Ericsson's <em>Peak</em> — the myelin/deep-practice story, told through "talent hotbeds." Lighter and more anecdotal than Peak (hence scan), but the case studies of how skill physically builds are vivid and directly applicable to deliberate art practice. Read it fast, alongside Peak's rigor.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Talent+Code+Coyle" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Talent%20Code%20Coyle/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Talent%20Code%20Coyle/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Ultralearning</p>
+      <div class="badges"><span class="flag scan">Scan-worthy</span><span class="flag pro">Pro-relevant</span></div>
+      <p class="book-author">Scott Young</p>
+      <p class="book-why">The applied, project-based flipside of Peak's theory — how to structure aggressive self-directed skill acquisition. Genuinely useful for someone learning new tools/pipelines (very relevant to AI-assisted art workflows). Scan-flagged: it's a method wrapped in some filler; take the principles and the drills.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Ultralearning+Scott+Young" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Ultralearning%20Young/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Ultralearning%20Young/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">So Good They Can't Ignore You</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span><span class="flag pro">Pro-relevant</span></div>
+      <p class="book-author">Cal Newport</p>
+      <p class="book-why">The genuinely contrarian thesis that "follow your passion" is bad advice, and that mastery <em>precedes</em> passion rather than the reverse — you get fulfillment by becoming excellent, not by finding your bliss first. A real reframe (not a pamphlet) and directly relevant to a craft career's long arc.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=So+Good+They+Can%27t+Ignore+You+Newport" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-So%20Good%20They%20Can%27t%20Ignore%20You/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-So%20Good%20They%20Can%27t%20Ignore%20You/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp">
+      <summary><span class="grp-chev">▸</span><span class="vein-tag vt-emotion">⑤ Connection</span><h2 class="grp-h">Emotion, connection &amp; the good life</h2></summary>
+      
+    <p class="vein-sub">The relational self — the vein your examples didn't reach, but that clearly belongs: what actually makes a life feel good, backed by evidence rather than sentiment.</p>
+
+    <div class="book">
+      <p class="book-title">The Good Life</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Robert Waldinger &amp; Marc Schulz</p>
+      <p class="book-why">The findings from the Harvard Study of Adult Development — the longest longitudinal study of happiness ever run — and its blunt conclusion: relationships, more than achievement or wealth, determine how well a life goes. The evidence-based counterweight to the whole optimize-yourself shelf. Data-grounded, not preachy.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=The+Good+Life+Waldinger" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-The%20Good%20Life%20Waldinger/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-The%20Good%20Life%20Waldinger/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Bittersweet</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Susan Cain</p>
+      <p class="book-why">On the value of longing, melancholy, and sorrow as sources of creativity and connection — a defense of the bittersweet temperament against a culture demanding relentless positivity. In the Burkeman "negative path" family. Cain (of <em>Quiet</em>) writes with real depth; relevant to the emotional register a lot of art comes from.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Bittersweet+Susan+Cain" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Bittersweet%20Susan%20Cain/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Bittersweet%20Susan%20Cain/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+  
+    </details>
+<details class="grp">
+      <summary><span class="grp-chev">▸</span><span class="vein-tag vt-meaning">⑥ Meaning</span><h2 class="grp-h">Meaning &amp; finitude</h2></summary>
+      
+    <p class="vein-sub">What the whole thing is for — your Stoic / Burkeman entry vein, kept tight since your other list covers it. The heavyweights only.</p>
+    <p class="anchor">Already read: <em>Four Thousand Weeks</em>, <em>The Obstacle Is the Way</em>, <em>Being Mortal</em>. These are the un-cheapened sources behind that vein.</p>
+
+    <div class="book">
+      <p class="book-title">Man's Search for Meaning</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Viktor Frankl</p>
+      <p class="book-why">The serious root of the whole Obstacle-Is-the-Way lineage — a psychiatrist's account of surviving the camps and the meaning-centered philosophy built from it. Every "master your response to adversity" book is a lightweight echo of this. Short, and earns every page.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Man%27s+Search+for+Meaning+Frankl" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Man%27s%20Search%20for%20Meaning/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Man%27s%20Search%20for%20Meaning/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">When Breath Becomes Air</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">Paul Kalanithi</p>
+      <p class="book-why">A neurosurgeon's memoir of facing his own terminal diagnosis — finitude made concrete and personal, the emotional counterpart to Four Thousand Weeks' argument. Character-forward (it's one real person's interior reckoning), beautifully written, devastating. The lived version of the meaning question.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=When+Breath+Becomes+Air+Kalanithi" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-When%20Breath%20Becomes%20Air/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-When%20Breath%20Becomes%20Air/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+
+    <div class="book">
+      <p class="book-title">Finite and Infinite Games</p>
+      <div class="badges"><span class="flag thesis">Real thesis</span></div>
+      <p class="book-author">James P. Carse</p>
+      <p class="book-why">One enormous reframing idea — some games we play to win and end, others to keep playing — that reshapes how you see careers, ambition, and relationships. A pamphlet-length book with a book's worth of thinking, dense and aphoristic. Pure reframe, in your Think Again / Ways of Being register.</p>
+      <div class="links">
+        <a class="primary" href="https://bookshop.org/beta-search?keywords=Finite+and+Infinite+Games+Carse" target="_blank" rel="noopener">Bookshop</a>
+        <a class="libby" href="https://libbyapp.com/search/berkeley/search/query-Finite%20and%20Infinite%20Games/page-1" target="_blank" rel="noopener">Libby · Berkeley</a>
+        <a class="libby" href="https://libbyapp.com/search/oakland/search/query-Finite%20and%20Infinite%20Games/page-1" target="_blank" rel="noopener">Libby · Oakland</a>
+      </div>
+    </div>
+  
+    </details>
+      </div>
+    </details>
+
+  </div>
+  <div class="pad" style="padding-top:0;">
+  <footer>
+    One library, two domains. Fiction weighted to worth-the-mull + character; nonfiction to rigor + reframing. Confidence, tier, vein, and thesis/scan flags carried over from the source lists. Libby links go live to the Berkeley &amp; Oakland collections — a tap confirms holdings.
+  </footer>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.quicknav a').forEach(a=>{
+    a.addEventListener('click', e=>{
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if(target && target.tagName === 'DETAILS'){
+        target.open = true;
+        let p = target.parentElement;
+        while(p){ if(p.tagName==='DETAILS') p.open = true; p = p.parentElement; }
+      }
+    });
+  });
+</script>
+</body>
+</html>
