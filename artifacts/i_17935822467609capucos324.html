@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teton RV Plan</title>
+<style>
+:root{
+  --bg:#f6f3ee;--card:#ffffff;--ink:#23201c;--muted:#6f675d;--line:#e3ddd3;
+  --accent:#8a5a2b;--accent-soft:#f1e6d8;--done:#5b7a4a;--warn:#a2462e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1916;--card:#25221e;--ink:#ece6dc;--muted:#a59b8e;--line:#3a352e;
+    --accent:#d9a066;--accent-soft:#3a2e22;--done:#8fb27b;--warn:#e08a6e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b1916;--card:#25221e;--ink:#ece6dc;--muted:#a59b8e;--line:#3a352e;
+  --accent:#d9a066;--accent-soft:#3a2e22;--done:#8fb27b;--warn:#e08a6e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}
+.wrap{max-width:860px;margin:0 auto}
+header h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--muted);font-size:13px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 14px}
+.bar{flex:1;min-width:160px;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--done);width:0;transition:width .3s}
+.pct{font-size:12px;color:var(--muted);min-width:70px;text-align:right}
+.btn{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:6px;padding:4px 9px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+a{color:var(--accent)}
+.timeline{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}
+.tl{flex:1 0 108px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+.tl b{display:block;font-size:12px}
+.tl span{font-size:11.5px;color:var(--muted)}
+.tl.hl{border-color:var(--accent);background:var(--accent-soft)}
+details.proj{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
+details.proj>summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:baseline}
+details.proj>summary::-webkit-details-marker{display:none}
+.chev{color:var(--muted);transition:transform .2s;display:inline-block;width:10px}
+details[open] .chev{transform:rotate(90deg)}
+.ptitle{font-weight:650;font-size:15px}
+.when{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.pcount{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.pdesc{margin:0 14px 8px 34px;color:var(--muted);font-size:13px}
+ul.tasks{list-style:none;margin:0;padding:0 14px 12px 14px}
+ul.tasks li{display:flex;gap:9px;padding:7px 0;border-top:1px dashed var(--line)}
+ul.tasks li:first-child{border-top:0}
+ul.tasks input{margin-top:3px;accent-color:var(--done);width:15px;height:15px;flex:none}
+.t{flex:1}
+.t b{font-weight:600}
+.t .d{display:block;color:var(--muted);font-size:12.5px}
+li.checked .t b{text-decoration:line-through;color:var(--muted)}
+.gate{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--warn);border:1px solid var(--warn);
+  border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:1px}
+.more{font-size:12px;white-space:nowrap;margin-left:4px}
+footer{color:var(--muted);font-size:12px;margin-top:14px}
+@media (max-width:520px){.pdesc{margin-left:14px}.when{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Teton Tampa RV: Winter Plan</h1>
+  <p>1990 Teton 40' Tampa · close ~end Nov · every-other-weekend visits · generator power · first night target late Feb–Mar · test before deciding</p>
+</header>
+
+<div class="meta">
+  <div class="bar"><i id="bar"></i></div><span class="pct" id="pct">0%</span>
+  <button class="btn" id="expand">Expand all</button>
+  <a class="btn" id="doclink" target="_blank" rel="noopener">Detail doc ↗</a>
+</div>
+
+<div class="timeline">
+  <div class="tl"><b>Nov</b><span>Before close</span></div>
+  <div class="tl"><b>Visit 1 · early Dec</b><span>Make safe</span></div>
+  <div class="tl"><b>Visit 2 · mid Dec</b><span>Clean + gut + seal</span></div>
+  <div class="tl"><b>Dec 24–Jan 1</b><span>Away (traps set)</span></div>
+  <div class="tl"><b>Jan</b><span>Test + decide</span></div>
+  <div class="tl"><b>Feb</b><span>Livable setup</span></div>
+  <div class="tl hl"><b>Late Feb–Mar</b><span>First night</span></div>
+  <div class="tl"><b>Spring+</b><span>Refinish</span></div>
+</div>
+
+<div id="projects"></div>
+
+<footer>Checkmarks save in this browser only. <span class="gate">DECIDE</span> marks a repair-or-replace decision point.</footer>
+</div>
+
+<script>
+const DOC="https://docs.google.com/document/d/1NFNST3uIurDceW6WRA3ykSsYoQddvJGS9Wjn-q27UGg/edit";
+document.getElementById("doclink").href=DOC;
+
+const P=[
+ {id:"p0",title:"0 · Before close",when:"Nov",sec:"0. Before close",
+  desc:"Paperwork and supplies so the first visit is productive.",
+  tasks:[
+   ["Confirm RV title (pink slip)","Registration is in the Catrons' names and lapsed 2/2025. Get the signed title with the equipment bill of sale."],
+   ["Call El Dorado County Planning","Ask about a temporary RV permit, whether it needs a building permit, and toilet and gray water rules."],
+   ["Buy first-visit kit","P100 respirators, nitrile gloves, coveralls, bleach sprayer, snap traps, copper mesh, borescope, multimeter."],
+   ["Buy new LP/CO/smoke detectors + extinguisher","Old detectors are expired by definition."],
+   ["Organize the schematic set","Scan the schematics to Drive; the paper set lives in the RV. Join Teton Club International for parts questions."]
+  ]},
+ {id:"p1",title:"1 · Make safe + document",when:"Visit 1",sec:"1. Make it safe and document",
+  desc:"Nothing gets lit or plugged in yet. Find out what you have.",
+  tasks:[
+   ["Photograph everything","Rooms, compartments, underbelly, roof, appliance labels and serials."],
+   ["Isolate propane + read tank dates","Close and disconnect the tanks. Tanks over 12 years old need requalifying."],
+   ["Clear wasp nests from vents","Furnace, water heater, and fridge vents. Borescope the burners and flues, then add bug screens."],
+   ["Roof inspection","EPDM seams, vents, skylights, AC shroud. Reseal cracked spots with Dicor."],
+   ["Set traps + flour test","Check for tracks or catches next visit to tell if mice are active."],
+   ["Pull dead house batteries","No shore power yet."]
+  ]},
+ {id:"p2",title:"2 · Rodent cleanup + gut",when:"Visit 2",sec:"2. Rodent cleanup and gut",
+  desc:"Wet-clean method only: bleach 1:9, soak 5 min, never sweep or vacuum.",
+  tasks:[
+   ["Soft goods out","Mattress, cushions, drapes, valances. Keep hardware and old covers for patterns."],
+   ["Pull all drawers + clean cavities","Mice nest behind drawers and in toe-kicks."],
+   ["Carpet out","Soak first, cut in strips, roll inward, bag. Mark subfloor damage."],
+   ["Check hidden nest sites","Furnace cabinet and ducts, behind the fridge, under the slides, the generator compartment, the underbelly."],
+   ["Seal entry points","Copper mesh + pest foam at every underbelly penetration. Leave traps set for the holidays."]
+  ]},
+ {id:"p3",title:"3 · Test systems + decide",when:"Jan",sec:"3. Systems testing and decisions",
+  desc:"Get a repair-or-replace answer for each system, backed by test results. Order parts at the end.",
+  tasks:[
+   ["12V system with a test battery","Use drawings E.9–E.11, test one circuit at a time. Plan on replacing the 1990 converter."],
+   ["120V on generator","Turn breakers on one at a time, test outlets, check the GFCI. Choose a 30A inverter generator plus a bonding plug."],
+   ["Propane: new regulator + manometer test","Replace the regulator and pigtails. Watch for a pressure drop over 10–15 minutes.",true],
+   ["Furnace (Suburban NT-34SP)","Installed ~2001. Clear the burner, check the sail switch, run a full cycle.",true],
+   ["Water heater","Check the anode and tank, test on electric first. Repair, or bypass for now.",true],
+   ["Fridge","The 1990 absorption fridge is likely not worth fixing. Replace with a 12V compressor fridge.",true],
+   ["Plumbing + fresh tank","Look for polybutylene, pressure-check, sanitize, test the winterizer solenoids.",true],
+   ["Slide-outs","Inspect wiring (E.8 warning) and seals before running. Use the slides, or leave them closed.",true],
+   ["Black tank","Not needed with a composting toilet. Remove it or leave it.",true],
+   ["Order parts from decisions","Batch the order so everything arrives before the February visits."]
+  ]},
+ {id:"p4",title:"4 · Minimum livable",when:"Feb",sec:"4. Minimum livable setup",
+  desc:"A safe first overnight, not a finished interior.",
+  tasks:[
+   ["Heat","The furnace if it passed, otherwise the fallback. Nights are near freezing."],
+   ["Battery bank + charging","Enough to run the furnace blower, lights, and fridge overnight with the generator off."],
+   ["Composting toilet install","Urine-diverting, fan vented out. Solids bin away from food beds, urine away from the well."],
+   ["Water + gray water plan","Plumbing or jugs plus a pump. Carry gray water out in a tote."],
+   ["Install detectors + extinguisher + lock","Test the LP, CO, and smoke detectors."],
+   ["Bed","Prime the platform if it's contaminated, then a new mattress."],
+   ["Leaving-checklist","Water drained or bypassed, propane off, traps set, battery disconnect."],
+   ["First overnight 🎉","Target late Feb–Mar."]
+  ]},
+ {id:"p5",title:"5 · Refinish",when:"Spring+",sec:"5. Refinish",
+  desc:"The cosmetic work, once systems and safety are settled.",
+  tasks:[
+   ["Subfloor repair + BIN primer","Replace soft spots; seal stains and odor."],
+   ["Flooring","Click vinyl plank or sheet vinyl with expansion gaps; check slide clearance."],
+   ["Paint walls + cabinets","Degrease, scuff, adhesion primer, enamel. Test a hidden spot."],
+   ["Window coverings","Cellular or blackout shades; reuse valance shapes."],
+   ["Cushions + upholstery","New foam; old covers as patterns."]
+  ]},
+ {id:"p6",title:"6 · Site + ongoing",when:"Ongoing",sec:"6. Site and ongoing",
+  desc:"Things that keep it working between visits.",
+  tasks:[
+   ["Pest check every visit","Traps, sealed food bins, recheck the penetrations seasonally."],
+   ["Generator station","Level, covered, 20+ ft from the RV with exhaust pointed away."],
+   ["Final waste + gray water setup","Once the county answers."],
+   ["Leave it parked","Tires are likely original. Chock and block, don't tow."]
+  ]}
+];
+
+const KEY="teton-rv-plan-v1";
+let state={};
+try{state=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){state={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+
+const root=document.getElementById("projects");
+P.forEach(p=>{
+  const d=document.createElement("details");d.className="proj";d.id=p.id;
+  const s=document.createElement("summary");
+  s.innerHTML=`<span class="chev">▸</span><span class="ptitle"></span><span class="when"></span><span class="pcount"></span>`;
+  s.querySelector(".ptitle").textContent=p.title;
+  s.querySelector(".when").textContent=p.when;
+  d.appendChild(s);
+  const desc=document.createElement("p");desc.className="pdesc";
+  desc.textContent=p.desc+" ";
+  const a=document.createElement("a");a.href=DOC;a.target="_blank";a.rel="noopener";a.className="more";
+  a.textContent="See more → “"+p.sec+"”";desc.appendChild(a);
+  d.appendChild(desc);
+  const ul=document.createElement("ul");ul.className="tasks";
+  p.tasks.forEach((t,i)=>{
+    const k=p.id+"-"+i;
+    const li=document.createElement("li");
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state[k];cb.id=k;
+    const lab=document.createElement("label");lab.className="t";lab.htmlFor=k;
+    const b=document.createElement("b");b.textContent=t[0];lab.appendChild(b);
+    if(t[2]){const g=document.createElement("span");g.className="gate";g.textContent="DECIDE";lab.appendChild(g)}
+    const sp=document.createElement("span");sp.className="d";sp.textContent=t[1];lab.appendChild(sp);
+    li.append(cb,lab);if(cb.checked)li.classList.add("checked");
+    cb.addEventListener("change",()=>{state[k]=cb.checked;li.classList.toggle("checked",cb.checked);save();update()});
+    ul.appendChild(li);
+  });
+  d.appendChild(ul);root.appendChild(d);
+});
+
+function update(){
+  let all=0,done=0;
+  P.forEach(p=>{
+    let n=p.tasks.length,c=0;p.tasks.forEach((_,i)=>{if(state[p.id+"-"+i])c++});
+    all+=n;done+=c;
+    document.querySelector("#"+p.id+" .pcount").textContent=c+"/"+n;
+  });
+  const pct=all?Math.round(done/all*100):0;
+  document.getElementById("bar").style.width=pct+"%";
+  document.getElementById("pct").textContent=pct+"% ("+done+"/"+all+")";
+}
+update();
+// open the first project with unchecked tasks
+const first=P.find(p=>p.tasks.some((_,i)=>!state[p.id+"-"+i]));
+if(first)document.getElementById(first.id).open=true;
+
+const ex=document.getElementById("expand");
+ex.addEventListener("click",()=>{
+  const ds=[...document.querySelectorAll("details.proj")];
+  const open=!ds.every(d=>d.open);ds.forEach(d=>d.open=open);
+  ex.textContent=open?"Collapse all":"Expand all";
+});
+</script>
+</body>
+</html>
